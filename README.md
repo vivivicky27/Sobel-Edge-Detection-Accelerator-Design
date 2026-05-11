@@ -245,6 +245,42 @@ The local storage requirement is approximately:
 
 For the configured maximum width of 1920 pixels, this is significantly smaller than buffering a full 1920×1080 frame.
 
+### Measured II / Throughput Evidence
+
+The intended throughput target was verified in the Vitis HLS synthesis log. The full log is included at:
+
+```text
+docs/reports/vitis_hls_full_run.log
+```
+
+The synthesis scheduler reports:
+
+```
+Pipelining result : Target II = 1, Final II = 1, Depth = 5, loop 'ROW_LOOP_COL_LOOP'
+```
+
+This confirms that the main pixel-processing loop achieved the intended initiation interval of 1. Therefore, after the pipeline is filled, the accelerator can accept and process one pixel per cycle.
+
+For the 64×64 test image, the input contains:
+
+```
+64 × 64 = 4096 pixels
+```
+
+The HLS performance estimate reports an accelerator latency of approximately 4103 cycles and a pipeline-loop latency of approximately 4099 cycles. This is very close to the 4096 input pixels, which is consistent with a streaming architecture operating at approximately one pixel per cycle after pipeline fill.
+
+| Evidence                        | Result      |
+| ------------------------------- | ----------- |
+| Target II                       | 1           |
+| Final II                        | 1           |
+| Pipeline depth                  | 5           |
+| Test image size                 | 64 × 64     |
+| Total input pixels              | 4096        |
+| Top-level estimated latency     | 4103 cycles |
+| Pipeline-loop estimated latency | 4099 cycles |
+
+This provides measured synthesis evidence that the efficiency goal was achieved, rather than only relying on the presence of the `#pragma HLS PIPELINE II=1` directive in the source code.
+
 ### Design Tradeoff Analysis
 
 | Design Choice      | Benefit                                               | Tradeoff                                               |
