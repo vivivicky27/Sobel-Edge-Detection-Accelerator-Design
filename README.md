@@ -418,7 +418,6 @@ The directly inspectable evidence files are:
 ```text
 docs/reports/sobel_accel_csynth.rpt        # Vitis HLS synthesis report
 docs/reports/vitis_hls_full_run.log        # Full Vitis HLS run log
-docs/reports/csim_pass_log.txt             # C simulation pass log
 docs/reports/pynq_hardware_log.txt         # PYNQ hardware execution log
 docs/images/synthesis_summary.png          # HLS synthesis summary screenshot
 docs/images/latency_report.png             # HLS latency screenshot
@@ -455,29 +454,53 @@ This result supports the streaming architecture goal because the design does not
 
 ------
 
-### HLS Resource Utilization
+### Post-RTL-Synthesis Resource and Timing Result
 
-The HLS synthesis report shows the following resource utilization:
+The following result was obtained from the Vitis HLS implementation flow:
+
+```text
+IMPLEMENTATION → Reports & Viewers → Report (RTL Synthesis)
+```
+
+The report is included at:
+
+```
+docs/reports/sobel_accel_export.rpt
+```
+
+After exporting the HLS Sobel accelerator RTL and running RTL synthesis, the post-synthesis resource usage is:
 
 | Resource | Usage |
 | -------- | ----- |
-| BRAM_18K | 2     |
+| LUT      | 573   |
+| FF       | 714   |
 | DSP      | 4     |
-| FF       | 1166  |
-| LUT      | 1551  |
+| BRAM     | 2     |
+| URAM     | 0     |
+| SRL      | 4     |
 
-### Resource Interpretation
+The post-synthesis timing result is:
 
-The resource usage is consistent with the intended lightweight streaming design.
+| Timing Item                          | Result    |
+| ------------------------------------ | --------- |
+| Required clock period                | 10.000 ns |
+| Achieved post-synthesis clock period | 8.190 ns  |
+| Timing status                        | Met       |
 
-- **BRAM_18K = 2**
-   The accelerator uses a small amount of BRAM because it stores only a 3-line buffer rather than a full image frame.
+### Resource and Timing Interpretation
+
+This result shows that the generated RTL implementation is lightweight and meets the target timing constraint.
+
+- **BRAM = 2**
+   The accelerator stores only a small 3-line buffer instead of buffering the full image frame.
 - **DSP = 4**
-   The Sobel operation uses small fixed convolution kernels and simple arithmetic. DSP usage remains low because the design mainly performs additions, subtractions, shifts, and absolute-value operations.
-- **FF = 1166 and LUT = 1551**
-   These resources mainly come from the AXI4-Stream control logic, the 3×3 sliding window, line-buffer control, side-channel handling, and pipelined datapath registers.
+   The Sobel operation uses simple fixed-kernel arithmetic, so DSP usage remains low.
+- **LUT = 573 and FF = 714**
+   These resources mainly come from the AXI4-Stream datapath, side-channel handling, line-buffer update logic, sliding-window control, and pipeline registers.
+- **Timing met at 10 ns**
+   The achieved post-synthesis clock period is 8.190 ns, which is below the required 10.000 ns period. This means the generated RTL satisfies the target clock after RTL synthesis.
 
-Overall, the resource utilization is low enough for integration into a larger FPGA image-processing pipeline on the Zynq-7020 platform.
+Overall, the post-RTL-synthesis result supports the design goal of a low-resource streaming Sobel accelerator that can be integrated into a larger FPGA image-processing system.
 
 ------
 
