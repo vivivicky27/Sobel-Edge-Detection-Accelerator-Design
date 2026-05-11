@@ -45,26 +45,40 @@ PYNQ Hardware Execution with AXI DMA
 ## Repository Structure
 
 ```text
+## Repository Structure
+
+```text
 .
-├── include/
-│   └── sobel_accel.h
-├── src/
-│   └── sobel_accel.cpp
-│
-├── tb/
-│   ├── sobel_tb.cpp
-│   ├── tb_input_pixels.txt
-│   └── tb_output_edge.txt
+├── hls/
+│   ├── include/
+│   │   └── sobel_accel.h
+│   ├── src/
+│   │   └── sobel_accel.cpp
+│   ├── testbench/
+│   │   ├── sobel_tb.cpp
+│   │   ├── tb_input_pixels.txt
+│   │   └── tb_output_edge.txt
+│   └── scripts/
+│       └── run_hls.tcl
 │
 ├── jupyter/
 │   └── sobel_pynq_demo.ipynb
 │
 ├── docs/
-│   ├── hardware_result.png
+│   ├── flow.png
+│   ├── interfaces.png
+│   ├── waves.png
+│   ├── waves2.png
 │   ├── vivado_block_design.png
 │   ├── synthesis_summary.png
 │   ├── latency_report.png
-│   └── resource_utilization.png
+│   ├── hardware_result.png
+│   └── reports/
+│       ├── vitis_hls_full_run.log
+│       ├── csim_pass_log.txt
+│       ├── sobel_accel_csynth.rpt
+│       ├── sobel_accel_export.rpt
+│       └── pynq_hardware_log.txt
 │
 └── README.md
 ```
@@ -690,3 +704,19 @@ Then run the PYNQ notebook to:
 7. Wait for completion.
 8. Display the output edge image.
 
+## Reproducibility and Automation
+
+The HLS flow can be reproduced using the Tcl automation script:
+
+```text
+hls/scripts/run_hls.tcl
+```
+
+To run the automated HLS flow:
+
+```
+cd hls/scripts
+vitis_hls -f run_hls.tcl
+```
+
+This script creates the Vitis HLS project, adds the Sobel source files, adds the C simulation testbench and golden-model vectors, sets the Zynq-7020 target device, creates a 10 ns clock, runs C simulation, runs HLS synthesis, and exports the Sobel accelerator as a Vivado IP.
