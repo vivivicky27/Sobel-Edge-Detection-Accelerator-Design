@@ -289,7 +289,7 @@ The HLS testbench verifies the accelerator by comparing its output against the P
 6. Each HLS output pixel is compared against `tb_output_edge.txt`.
 7. The test passes only if all output pixels match the Python golden output.
 
-Expected successful output:
+The following log was produced by running the HLS C simulation:
 
 ```text
 Running Sobel Accelerator...
@@ -297,6 +297,23 @@ TEST PASSED! 100% Bit-true match with Golden Model.
 ```
 
 The testbench should use relative paths for the input and golden output files so that the simulation can be rerun on another machine without depending on local Windows-specific directories.
+
+Vitis HLS C Simulation Result
+
+Target device: xc7z020-clg400-1
+Clock period: 10 ns
+
+Running: csim_design
+
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch CLANG as the compiler.
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design
+
+P.S. The full Vitis HLS run log is included in `docs/reports/vitis_hls_full_run.log`.  
+It records successful C simulation, HLS synthesis, II=1 pipeline scheduling, array partitioning, AXI4-Stream interface generation, and AXI4-Lite control interface generation.
 
 ---
 
