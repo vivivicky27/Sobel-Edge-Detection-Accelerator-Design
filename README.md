@@ -8,6 +8,20 @@ The accelerator receives grayscale image pixels through an AXI4-Stream input, pe
 
 The main design objective is to build a lightweight and reusable image-processing IP that supports DMA-based streaming, software-controlled configuration, and hardware execution on an FPGA system.
 
+## Quick Performance Summary
+
+| Metric             | Target   | Achieved           | Status |
+| ------------------ | -------- | ------------------ | ------ |
+| Clock Period       | 10.00 ns | 8.19 ns (post-RTL) | ✅ Met  |
+| Pipeline II        | 1        | 1                  | ✅ Met  |
+| Pipeline Depth     | -        | 5                  | -      |
+| LUT                | Low      | 573 (2%)           | ✅ Met  |
+| BRAM               | Minimize | 2 (~0%)            | ✅ Met  |
+| DSP                | Minimize | 4 (1%)             | ✅ Met  |
+| Hardware Exec Time | -        | 2.96 ms on PYNQ    | ✅ Met  |
+
+> Note: Top-level latency shows `?` in HLS report because width/height are runtime AXI4-Lite parameters. Throughput is confirmed by Final II=1 and hardware execution time.
+
 ------
 
 ## Grader Notes
