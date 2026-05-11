@@ -45,9 +45,6 @@ PYNQ Hardware Execution with AXI DMA
 ## Repository Structure
 
 ```text
-## Repository Structure
-
-```text
 .
 ├── hls/
 │   ├── include/
@@ -127,7 +124,7 @@ Pass only if all pixels match
 
 Using a Python golden model improves verification reliability because the expected result is generated independently from the HLS implementation, instead of validating the hardware design against itself.
 
-![flow](docs\flow.png)
+![flow](docs/flow.png)
 
 ---
 
@@ -156,7 +153,7 @@ void sobel_accel(
 | `threshold`  | AXI4-Lite   |     Input | Sobel magnitude threshold      |
 | `return`     | AXI4-Lite   |   Control | IP control and status register |
 
-![image-20260511070755774](docs\interfaces.png)
+![image-20260511070755774](docs/interfaces.png)
 
 The pixel stream uses an 8-bit AXI stream payload with side-channel signals:
 
@@ -308,9 +305,9 @@ This provides measured synthesis evidence that the efficiency goal was achieved,
 
 The chosen design favors throughput, streaming behavior, and DMA compatibility over absolute minimum resource usage. This is appropriate for Sobel edge detection because the algorithm has strong spatial locality and can be efficiently implemented using line-buffer reuse.
 
-![image-20260511071606587](docs\waves.png)
+![image-20260511071606587](docs/waves.png)
 
-![image-20260511071632515](F:\nyuhomework\hardware\project\sobel\docs\waves2.png)
+![image-20260511071632515](docs/waves2.png)
 
 ---
 
@@ -400,7 +397,7 @@ AXI DMA S2MM
 DDR Memory
 ```
 
-![vivado_block_design.png](docs\vivado_block_design.png)
+![vivado_block_design.png](docs/vivado_block_design.png)
 
 ### Control Path
 
