@@ -407,41 +407,132 @@ The hardware output produces a binary edge image from the input grayscale image.
 
 ---
 
-## Performance and Resource Analysis
+## Performance and Resource Verification
 
-The accelerator was evaluated using Vitis HLS synthesis reports and PYNQ hardware execution.
+This section summarizes the accelerator performance and resource utilization based on Vitis HLS synthesis reports and PYNQ hardware execution.
 
-### Initial Performance Goals
+### Evidence Files
 
-| Goal                    |                                                  Target |
-| ----------------------- | ------------------------------------------------------: |
-| Streaming throughput    |                 One pixel per cycle after pipeline fill |
-| Interface compatibility |                     AXI4-Stream DMA + AXI4-Lite control |
-| On-chip memory usage    |                              Avoid full-frame buffering |
-| Resource usage          | Keep BRAM/DSP/LUT usage low enough for FPGA integration |
-| Hardware execution      |  Complete DMA-based edge detection successfully on PYNQ |
+The directly inspectable evidence files are:
 
-### Synthesis Resource Utilization
+```text
+docs/reports/sobel_accel_csynth.rpt        # Vitis HLS synthesis report
+docs/reports/vitis_hls_full_run.log        # Full Vitis HLS run log
+docs/reports/csim_pass_log.txt             # C simulation pass log
+docs/reports/pynq_hardware_log.txt         # PYNQ hardware execution log
+docs/images/synthesis_summary.png          # HLS synthesis summary screenshot
+docs/images/latency_report.png             # HLS latency screenshot
+```
+
+These files provide evidence for synthesis completion, pipeline scheduling, resource usage, and hardware execution.
+
+------
+
+### Initial Design Goals
+
+| Goal                         | Target                                                       |
+| ---------------------------- | ------------------------------------------------------------ |
+| Streaming throughput         | One pixel per cycle after pipeline fill                      |
+| Pipeline initiation interval | II = 1                                                       |
+| Interface                    | AXI4-Stream data + AXI4-Lite control                         |
+| Memory strategy              | Avoid full-frame buffering                                   |
+| Resource usage               | Keep BRAM/DSP/LUT usage low enough for integration on Zynq-7020 |
+| Hardware validation          | Successfully run bitstream on PYNQ using DMA                 |
+
+------
+
+### HLS Pipeline Result
+
+The Vitis HLS synthesis log reports:
+
+```
+Pipelining result : Target II = 1, Final II = 1, Depth = 5
+```
+
+This confirms that the main pixel-processing loop achieved the intended initiation interval. After the pipeline is filled, the accelerator is scheduled to accept/process one pixel per cycle.
+
+This result supports the streaming architecture goal because the design does not need to wait for an entire frame before producing output pixels.
+
+------
+
+### HLS Resource Utilization
+
+The HLS synthesis report shows the following resource utilization:
 
 | Resource | Usage |
-| -------- | ----: |
-| BRAM_18K |     2 |
-| DSP      |     4 |
-| FF       |  1166 |
-| LUT      |  1551 |
+| -------- | ----- |
+| BRAM_18K | 2     |
+| DSP      | 4     |
+| FF       | 1166  |
+| LUT      | 1551  |
 
-The design uses a small amount of BRAM because it only requires a three-row line buffer instead of full-frame storage. DSP usage remains low because the Sobel operation uses fixed small convolution kernels and simple arithmetic. LUT and FF usage mainly come from the sliding-window logic, stream-control logic, side-channel handling, and pipelined datapath.
+### Resource Interpretation
+
+The resource usage is consistent with the intended lightweight streaming design.
+
+- **BRAM_18K = 2**
+   The accelerator uses a small amount of BRAM because it stores only a 3-line buffer rather than a full image frame.
+- **DSP = 4**
+   The Sobel operation uses small fixed convolution kernels and simple arithmetic. DSP usage remains low because the design mainly performs additions, subtractions, shifts, and absolute-value operations.
+- **FF = 1166 and LUT = 1551**
+   These resources mainly come from the AXI4-Stream control logic, the 3×3 sliding window, line-buffer control, side-channel handling, and pipelined datapath registers.
+
+Overall, the resource utilization is low enough for integration into a larger FPGA image-processing pipeline on the Zynq-7020 platform.
+
+------
 
 ### Hardware Execution Result
 
-| Metric                  |          Result |
-| ----------------------- | --------------: |
-| Hardware execution time |         2.96 ms |
-| Initial IP status       |             0x4 |
-| Final IP status         |             0xe |
-| Output type             | Binary edge map |
+The PYNQ hardware execution log reports:
 
-The measured 2.96 ms runtime includes the PYNQ-controlled hardware execution and DMA-based transfer flow. The final IP status indicates that the accelerator completed successfully.
+```
+Loading hardware bitstream...
+
+Hardware loaded!
+Configuring IP...
+Initial IP Status: 0x4
+Starting receive DMA...
+Starting IP core...
+Starting send DMA...
+Success! Hardware finished in 2.96 ms
+Final IP Status: 0xe
+```
+
+| Metric                  | Result                  |
+| ----------------------- | ----------------------- |
+| Hardware execution time | 2.96 ms                 |
+| Initial IP status       | 0x4                     |
+| Final IP status         | 0xe                     |
+| Data movement           | AXI DMA                 |
+| Output                  | Binary Sobel edge image |
+
+The final IP status indicates that the accelerator completed successfully. The measured 2.96 ms runtime demonstrates that the Vivado-generated bitstream and HLS IP were successfully executed through the PYNQ hardware/software flow.
+
+------
+
+### Performance Interpretation
+
+The accelerator meets the main performance goal of a streaming Sobel IP:
+
+```
+Target II = 1
+Final II = 1
+```
+
+This means the design is scheduled to process pixels continuously after pipeline fill. Combined with the line-buffer architecture, the accelerator avoids full-frame storage and supports DMA-based streaming.
+
+The hardware runtime of 2.96 ms provides board-level validation that the IP, AXI DMA path, and PYNQ control software work together correctly.
+
+------
+
+### Limitation
+
+Because `width` and `height` are runtime-configurable AXI4-Lite parameters, some latency fields in the HLS report may appear as unresolved or data-dependent. Therefore, this project reports both:
+
+1. The HLS scheduling result, especially `Final II = 1`
+2. The actual PYNQ hardware execution time of 2.96 ms
+
+Together, these provide both synthesis-level and hardware-level performance evidence.
 
 ### Analysis
 
